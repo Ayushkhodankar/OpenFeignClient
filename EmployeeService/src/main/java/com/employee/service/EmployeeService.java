@@ -1,0 +1,41 @@
+package com.employee.service;
+
+
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import com.employee.entity.Employee;
+import com.employee.feignclient.AddressClient;
+import com.employee.repository.EmployeeRepo;
+import com.employee.response.AddressResponse;
+import com.employee.response.EmployeeResponse;
+
+import java.util.Optional;
+
+@Service
+public class EmployeeService {
+
+	@Autowired
+	private EmployeeRepo employeeRepo;
+
+	@Autowired
+	private ModelMapper mapper;
+
+	@Autowired
+	private AddressClient addressClient;
+
+	public EmployeeResponse getEmployeeById(int id) {
+
+		Optional<Employee> employee = employeeRepo.findById(id);
+		EmployeeResponse employeeResponse = mapper.map(employee, EmployeeResponse.class);
+
+		ResponseEntity<AddressResponse> addressResponse = addressClient.getAddressByEmployeeId(id);
+		employeeResponse.setAddressResponse(addressResponse.getBody());
+
+		return employeeResponse;
+	}
+
+}
